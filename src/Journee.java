@@ -1,5 +1,6 @@
 import java.sql.Date;
 import java.sql.Time;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
@@ -12,7 +13,7 @@ import Exeption.*;
 
 public class Journee implements Comparable<Journee>{
     String nom;
-    TreeMap<Time, Creneau> creneaux;
+    TreeMap<LocalTime, Creneau> creneaux;
     Date date;
     int nbTacheARealiser;
     int nbTacheRealisee;
@@ -20,7 +21,7 @@ public class Journee implements Comparable<Journee>{
     public Journee(Date date , String nom) {
         this.nom = nom;
         this.date = date;
-        this.creneaux = new TreeMap<Time, Creneau>();
+        this.creneaux = new TreeMap<LocalTime, Creneau>();
         this.nbTacheARealiser = 0;
         this.nbTacheRealisee = 0;
     }
@@ -30,7 +31,7 @@ public class Journee implements Comparable<Journee>{
     }
 
     // add a creneau libre to the day , the creneau libre must be at least 30 min and not overlapping with an existing one
-    public void addCreneau(Time debut, Time fin) throws CreneauLibreLessThanMinException, CreneauLibreOverlappingException {
+    public void addCreneau(LocalTime debut, LocalTime fin) throws CreneauLibreLessThanMinException, CreneauLibreOverlappingException {
         Creneau creneau = new Creneau(debut, fin);
         if (isCreneauOverlapping(creneau)) {
             throw new CreneauLibreOverlappingException();
@@ -39,13 +40,13 @@ public class Journee implements Comparable<Journee>{
     }
 
     public boolean isCreneauOverlapping(Creneau creneau) {
-        Map.Entry<Time, Creneau> beforeEntry = creneaux.lowerEntry(creneau.debut);// return the creneau before the creneau to add
-        Map.Entry<Time, Creneau> afterEntry = creneaux.higherEntry(creneau.debut);// return the creneau after the creneau to add
+        Map.Entry<LocalTime, Creneau> beforeEntry = creneaux.lowerEntry(creneau.debut);// return the creneau before the creneau to add
+        Map.Entry<LocalTime, Creneau> afterEntry = creneaux.higherEntry(creneau.debut);// return the creneau after the creneau to add
         // we check if the creneau to add is overlapping with the creneau before or after
-        if (beforeEntry != null && beforeEntry.getValue().fin.after(creneau.debut)) {
+        if (beforeEntry != null && creneau.debut.isBefore(beforeEntry.getValue().fin)) {
             return true;
         }
-        if (afterEntry != null && afterEntry.getValue().debut.before(creneau.fin)) {
+        if (afterEntry != null && creneau.fin.isAfter(afterEntry.getValue().debut)) {
             return true;
         }
         return false;
@@ -53,7 +54,7 @@ public class Journee implements Comparable<Journee>{
 
     private Creneau trouverCreneauDisponible(long duree) {
         for (Creneau creneau : creneaux.values()) {
-            if (creneau.isLibre && (creneau.fin.getTime() - creneau.debut.getTime()) >= duree) {
+            if (creneau.isLibre && creneau.getDuree() >= duree) {
                 return creneau;
             }
         }

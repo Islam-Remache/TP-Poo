@@ -1,6 +1,7 @@
 import Exeption.CreneauLibreLessThanMinException;
 
 import java.sql.Time;
+import java.time.LocalTime;
 /*
     * bloquer un creneau
     * la durée d'un creneau est de 30 minutes
@@ -8,15 +9,15 @@ import java.sql.Time;
 
 public class Creneau implements Comparable<Creneau> {
     boolean isLibre;
-    Time debut;
-    Time fin;
+    LocalTime debut;
+    LocalTime fin;
     Tache tache;
-    public Creneau(Time debut, Time fin) throws CreneauLibreLessThanMinException {
+    public Creneau(LocalTime debut, LocalTime fin) throws CreneauLibreLessThanMinException {
         this.debut = debut;
         this.fin = fin;
         this.isLibre = true;
         this.tache = null;
-        if (fin.getTime() - debut.getTime() < 1800000) {
+        if (fin.isBefore(debut.plusMinutes(30))) {
             throw new CreneauLibreLessThanMinException();
         }
     }
@@ -26,12 +27,12 @@ public class Creneau implements Comparable<Creneau> {
     }
     // getDuree
     public long getDuree() {
-        return fin.getTime() - debut.getTime();
+        return fin.toSecondOfDay() - debut.toSecondOfDay();
     }
 
     @Override
     public int compareTo(Creneau creneau) {
-        return Long.compare(this.debut.getTime(), creneau.debut.getTime());
+        return this.debut.compareTo(creneau.debut);
     }
 
 }
