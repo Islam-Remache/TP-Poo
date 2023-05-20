@@ -3,6 +3,11 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.TreeSet;
+
+import Exeption.CreneauLibreLessThanMinException;
+import Exeption.CreneauLibreOverlappingException;
+import Exeption.NoAvailableTimeSlotException;
+
 import java.time.*;
 import java.util.List;
 
@@ -43,4 +48,44 @@ public class Calendrier {
         this.unscheduledTaches.addAll(taches);
     }
 
+
+    
+public void PlanifierTacheSimple(Tache tache) throws NoAvailableTimeSlotException,CreneauLibreLessThanMinException,CreneauLibreOverlappingException{
+    Creneau creneau = null;
+    for(Journee journee : journees){
+       if(journee.date.compareTo(tache.Deadline)<=0){
+            creneau = journee.trouverCreneauDisponible(tache.duree);
+            if(creneau != null){
+                creneau.addTache(tache);
+                if((tache.duree<creneau.getDuree())){
+                    LocalTime updatedDebut = creneau.debut;
+                    updatedDebut.plusSeconds(tache.duree);
+                    LocalTime updatedFin = creneau.fin;
+                    creneau.fin = creneau.debut.plusMinutes( tache.duree);
+                    try{
+                    journee.addCreneau(updatedDebut,updatedFin);
+                    }catch(CreneauLibreLessThanMinException e){
+                        System.out.println("Extra Time has been deleted");
+                    }
+                    break;
+                }
+            }
+    
+        }else{
+             this.unscheduledTaches.add(tache);
+             tache.etat = Etat.notRealized;
+             throw new NoAvailableTimeSlotException();
+
+        }
+    }
+
+    if(creneau == null){
+        this.unscheduledTaches.add(tache);
+        tache.etat = Etat.notRealized;
+        throw new NoAvailableTimeSlotException();
+    }
 }
+
+}
+
+

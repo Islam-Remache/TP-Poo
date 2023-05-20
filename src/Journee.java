@@ -1,5 +1,4 @@
 import java.sql.Date;
-import java.sql.Time;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Map;
@@ -52,7 +51,7 @@ public class Journee implements Comparable<Journee>{
         return false;
     }
 
-    private Creneau trouverCreneauDisponible(long duree) {
+    public Creneau trouverCreneauDisponible(long duree) {
         for (Creneau creneau : creneaux.values()) {
             if (creneau.isLibre && creneau.getDuree() >= duree) {
                 return creneau;
@@ -81,6 +80,7 @@ public class Journee implements Comparable<Journee>{
         String nom = tache.nom;
         Priorite priorite = tache.priorite;
         long remainingTime = duree;
+        Date Deadline = tache.Deadline;
         int subTacheNum = 1;
         while (remainingTime > 0) {
             Creneau creneau = trouverCreneauDisponible(remainingTime);
@@ -98,13 +98,13 @@ public class Journee implements Comparable<Journee>{
                     throw new NoAvailableTimeSlotException();
                 }
                 long creneauDuree = firstLibreCreneau.getDuree();
-                TachSimple sousTache1 = new TachSimple(nom + " " + subTacheNum, creneauDuree, priorite, etat, 0);
+                TachSimple sousTache1 = new TachSimple(nom + " " + subTacheNum, creneauDuree, priorite, etat, 0,Deadline);
                 firstLibreCreneau.addTache(sousTache1);
                 sousTaches.add(sousTache1);
                 remainingTime -= creneauDuree;
             } else {
                 // If there is an available time slot, create a sub-task with the duration of the time slot
-                TachSimple sousTache = new TachSimple(nom + " " + subTacheNum, creneau.getDuree(), priorite, etat, 0);
+                TachSimple sousTache = new TachSimple(nom + " " + subTacheNum, creneau.getDuree(), priorite, etat, 0,Deadline);
                 creneau.addTache(sousTache);
                 sousTaches.add(sousTache);
                 remainingTime -= creneau.getDuree();
